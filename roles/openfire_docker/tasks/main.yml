@@ -1,0 +1,34 @@
+---
+- name: Creates the Openfire group.
+  group: name="{{ openfire_group_name }}" gid="{{ openfire_group_id }}" system="yes"
+- name: Creates the Openfire user.
+  user: name="{{ openfire_user_name }}" uid="{{ openfire_user_id }}" group="{{ openfire_group_name }}" system="yes"
+- name: Creates the OpenFire directory.
+  file: path="/appl/{{ openfire_dir }}" state=directory
+- name: Set permissions of the Openfire directory.
+  file: path="/appl/{{ openfire_dir }}" owner="{{ openfire_user_name }}" group="{{ openfire_group_name }}" mode=0777
+- name: Deletes existing OpenFire container.
+  docker:
+    name: "{{ openfire_container_name }}"
+    image: "{{ openfire_image }}"
+    state: absent
+    docker_api_version: "{{ docker_api_version }}"
+- name: Creates the OpenFire docker container.
+  docker:
+    name: "{{ openfire_container_name }}"
+    image: "{{ openfire_image }}"
+    state: restarted
+    restart_policy: always
+    privileged: true
+    docker_api_version: "{{ docker_api_version }}"
+    ports:
+    - "9090:9090"
+    - "9091:9091"
+    - "5222:5222"
+    - "5223:5223"
+    - "7777:7777"
+    - "7070:7070"
+    - "7443:7443"
+    - "5229:5229"
+    volumes:
+    - "/appl/{{ openfire_dir }}:/data"

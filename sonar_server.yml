@@ -1,0 +1,12 @@
+---
+- hosts: sonar_server_hosts
+
+  vars_files:
+  - vars.yml
+
+  roles:
+  - role: check_mounts
+    tags: check_mounts
+
+  - role: sonar_server_docker
+    tags: sonar_server_docker

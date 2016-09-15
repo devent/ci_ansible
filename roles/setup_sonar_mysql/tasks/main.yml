@@ -1,0 +1,10 @@
+---
+- name: Waits for the MySQL database.
+  wait_for: port=3306 delay=10
+
+- name: Upgrade the MySQL database.
+  command: "docker exec {{ database_container_name }} mysql_upgrade -p{{ mysql_root_password }}"
+
+- name: Setups the MySQL database.
+  tags: setup_mysql_sonar_database
+  script: "create_databases.sh '{{ mysql_container_name }}' '{{ mysql_root_password }}' '{{ sonar_server_db_user }}' '{{ sonar_server_db_password }}'"

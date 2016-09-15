@@ -1,0 +1,55 @@
+---
+- name: Deletes existing MySQL container.
+  tags: mysql_delete_container
+  docker:
+    name: "{{ mysql_container_name }}"
+    image: "{{ mysql_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Deletes existing MySQL data container.
+  tags: mysql_delete_data_container
+  docker:
+    name: "{{ mysql_data_container_name }}"
+    image: "{{ mysql_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the MySQL directories.
+  tags: mysql_dirs
+  file: path="{{ app_dir }}/{{ item }}" state=directory mode=0755
+  ignore_errors: yes
+  with_items:
+  - "{{ mysql_data_dir }}"
+  - "{{ mysql_conf_dir }}"
+
+- name: Deploys the MySQL configuration.
+  tags: mysql_conf_files
+  copy: src="{{ item.file }}" dest="/appl/{{ item.dest }}" mode=0644
+  with_items:
+  - { file: my.cnf, dest: "{{ mysql_conf_dir }}/my.cnf" }
+
+- name: Creates the MySQL data container.
+  tags: mysql_create_data_container
+  docker:
+    name: "{{ mysql_data_container_name }}"
+    image: "{{ mysql_image }}"
+    state: started
+    docker_api_version: "{{ docker_api_version }}"
+    command: "bash -c 'chown -R mysql:mysql /var/lib/mysql && chmod -R o-rX /var/lib/mysql && chmod -w /etc/mysql/my.cnf'"
+    volumes:
+    - "/appl/{{ mysql_data_dir }}:/var/lib/mysql"
+    - "/appl/{{ mysql_conf_dir }}/my.cnf:/etc/mysql/my.cnf"
+
+- name: Creates the MySQL docker container.
+  tags: mysql_create_container
+  docker:
+    name: "{{ mysql_container_name }}"
+    image: "{{ mysql_image }}"
+    state: restarted
+    restart_policy: always
+    privileged: true
+    docker_api_version: "{{ docker_api_version }}"
+    volumes_from: "{{ mysql_data_container_name }}"
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ mysql_root_password }}"

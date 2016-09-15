@@ -1,0 +1,31 @@
+---
+# Docker application directory.
+app_dir: /appl
+
+# Openfire docker container.
+openfire_container_name: openfire
+openfire_dir: openfire
+
+# Database docker container.
+mysql_image: mysql:5.7.14
+mysql_data_container_name: mysql_1_data
+mysql_container_name: mysql_1
+mysql_data_dir: mysql_1/data
+mysql_conf_dir: mysql_1/conf
+mysql_root_password: mysql
+
+# Sonar Server docker container.
+sonar_server_image: sonarqube:5.6
+sonar_server_data_container_name: sonar_server_data
+sonar_server_container_name: sonar_server
+sonar_server_data_dir: sonar_server/data
+sonar_server_extensions_dir: sonar_server/extensions
+sonar_server_jdbc: jdbc:mysql://db/sonar
+sonar_server_db_user: sonar
+sonar_server_db_password: 123qwe
+
+# Jenkins docker container.
+jenkins_image: jenkins:2.7.2
+jenkins_container_name: jenkins_1
+jenkins_data_container_name: jenkins_1_data
+jenkins_data_dir: jenkins_1/data

@@ -1,0 +1,12 @@
+---
+- name: Creates the applications partition.
+  filesystem: fstype=ext4 dev=/dev/xvdb
+- name: Set mount entry for the applications partition.
+  mount:
+    name: "/appl"
+    src: "/dev/xvdb"
+    fstype: "ext4"
+    opts: "defaults"
+    state: present
+- name: Set permissions of applications directory.
+  file: path=/appl owner=ec2-user group=wheel

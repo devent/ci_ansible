@@ -1,0 +1,4 @@
+---
+- name: Creates the applications directory.
+  tags: create_app_dir
+  file: path=/appl state=directory mode=o+w
