@@ -1,0 +1,36 @@
+{
+    "order": 0,
+    "template": "mysql_1-*",
+    "settings": { },
+    "mappings": {
+        "mysql_1": {
+            "properties": {
+                "log": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "stream": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "time": {
+                    "type": "date"
+                },
+                "timestamp8601": {
+                    "type": "date"
+                },
+                "thread_id": {
+                    "type": "integer"
+                },
+                "log_level": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "log_message": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                }
+            }
+        }
+    }
+}

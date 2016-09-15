@@ -1,0 +1,23 @@
+output {
+    {% for item in logstash_docker_logs_sources %}
+    if [type] == "{{ item }}" {
+        elasticsearch {
+            hosts => [
+            {% for item in el_hosts %}
+            {%- if loop.last -%}
+            "{{ item }}"
+            {% else %}
+            "{{ item }}",
+            {%- endif %}
+            {% endfor %}
+            ]
+            action => "index"
+            index => "{{ item }}-%{+YYYY.MM.dd}"
+            template => "/etc/elasticsearch/{{ item }}_template.json"
+            template_name => "{{ item }}"
+            template_overwrite => true
+            workers => 1
+        }
+    }
+    {% endfor %}
+}

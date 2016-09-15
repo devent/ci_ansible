@@ -1,0 +1,21 @@
+filter {
+    if [type] == "jenkins_1" {
+        json {
+            source => "message"
+        }
+        date {
+            match => [ "time", "ISO8601" ]
+            timezone => "UTC"
+            target => "@timestamp"
+        }
+        if [log] =~ /^(INFO)|(WARNING)|(ERROR):.*$/ {
+            grok {
+                match => { "log" => "^(?<log_level>(INFO)|(WARNING)|(ERROR)): %{GREEDYDATA:log_message}" }
+            }
+        } else {
+            grok {
+                match => { "log" => "^%{GREEDYDATA:log_message}$" }
+            }
+        }
+    }
+}

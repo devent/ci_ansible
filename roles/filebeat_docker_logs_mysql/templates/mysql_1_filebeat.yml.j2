@@ -1,0 +1,17 @@
+output:
+  logstash:
+    enabled: true
+    hosts:
+{% for item in logstash_docker_logs_hosts %}
+      - "{{ item }}"
+{% endfor %}
+    timeout: 15
+
+filebeat:
+  prospectors:
+    -
+      backoff: 1m
+      paths:
+        - /work/*.json
+      input_type: json
+      document_type: mysql_1

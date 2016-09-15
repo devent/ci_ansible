@@ -1,0 +1,72 @@
+---
+- name: Deletes existing Logstash container.
+  tags: logstash_docker_logs_delete_container
+  local_action:
+    module: docker
+    name: "{{ logstash_docker_logs_container_name }}"
+    image: "{{ logstash_docker_logs_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Logstash directories.
+  tags: logstash_docker_logs_dirs
+  file: path="/appl/{{ item }}" state=directory mode=0755
+  ignore_errors: yes
+  with_items:
+  - "{{ logstash_docker_logs_conf_dir }}"
+  - "{{ logstash_docker_logs_templates_dir }}"
+
+- name: Deletes old Logstash configuration.
+  tags: logstash_docker_logs_rm_conf
+  shell: "rm {{ app_dir }}/{{ logstash_docker_logs_conf_dir }}/*"
+  ignore_errors: yes
+
+- name: Deployes the Logstash inputs configuration.
+  tags: logstash_docker_logs_inputs_conf
+  template: src={{ item.src }} dest="/appl/{{ logstash_docker_logs_conf_dir }}/00_{{ item.dest }}"
+  with_items:
+  - { src: inputs_conf.j2, dest: 00_inputs.conf }
+
+- name: Deployes the Logstash filters configuration.
+  tags: logstash_docker_logs_filters_conf
+  template: src={{ item.src }} dest="/appl/{{ logstash_docker_logs_conf_dir }}/00_{{ item.dest }}"
+  with_items:
+  - { src: filters_conf.j2, dest: 00_filters.conf }
+
+- name: Deployes the Logstash filters sources configuration.
+  tags: logstash_docker_logs_sources_filters_conf
+  template: src="{{ item.1 }}_filter_conf.j2" dest="/appl/{{ logstash_docker_logs_conf_dir }}/10_{{ item.0 }}_{{ item.1 }}_filter.conf"
+  with_indexed_items: "{{ logstash_docker_logs_sources }}"
+
+- name: Deployes the Logstash outputs configuration.
+  tags: logstash_docker_logs_outputs_conf
+  template: src="{{ item.src }}" dest="/appl/{{ logstash_docker_logs_conf_dir }}/20_{{ item.dest }}"
+  with_items:
+  - { src: outputs_conf.j2, dest: 00_outputs.conf }
+
+- name: Deployes the Elasticsearch sources templates to Elasticsearch.
+  tags: logstash_docker_logs_elasticsearch_templates_elasticsearch
+  copy: src="{{ item }}_template.json" dest="/appl/{{ el_templates_dir }}/{{ item }}_template.json"
+  with_items: "{{ logstash_docker_logs_sources }}"
+
+- name: Deployes the Elasticsearch sources templates to Logstash.
+  tags: logstash_docker_logs_elasticsearch_templates_logstash
+  copy: src="{{ item }}_template.json" dest="/appl/{{ logstash_docker_logs_templates_dir }}/{{ item }}_template.json"
+  with_items: "{{ logstash_docker_logs_sources }}"
+
+- name: Creates the Logstash docker container.
+  tags: logstash_docker_logs_create_container
+  docker:
+    name: "{{ logstash_docker_logs_container_name }}"
+    image: "{{ logstash_docker_logs_image }}"
+    state: restarted
+    restart_policy: always
+    docker_api_version: "{{ docker_api_version }}"
+    command: "logstash -f /etc/logstash"
+    volumes:
+    - "/appl/{{ logstash_docker_logs_conf_dir }}:/etc/logstash:ro"
+    - "/appl/{{ logstash_docker_logs_templates_dir }}:/etc/elasticsearch:ro"
+    expose:
+    - "5000"
+    links:
+    - "{{ el_container_name }}:el0"

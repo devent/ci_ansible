@@ -1,0 +1,35 @@
+---
+- name: Deletes existing Filebeat containers.
+  tags: filebeat_docker_logs_mysql_delete_container
+  docker:
+    name: "{{ filebeat_docker_logs_container_name }}_{{ mysql_container_name }}"
+    image: "{{ filebeat_docker_logs_image_name }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Filebeat configuration directory.
+  tags: filebeat_docker_logs_mysql_dir
+  file: path="/{{ app_dir }}/{{ filebeat_docker_logs_conf_dir }}" state=directory mode=0755
+
+- name: Deployes the Filebeat sources configuration.
+  tags: filebeat_docker_logs_mysql_conf
+  template: src="{{ mysql_container_name }}_filebeat.yml.j2" dest="/appl/{{ filebeat_docker_logs_conf_dir }}/{{ mysql_container_name }}_filebeat.yml" mode=0644
+
+- name: Get log files of Jenkins container.
+  tags: filebeat_docker_logs_mysql_logfile
+  command: "docker inspect --format '{{ '{{' }} .LogPath {{ '}}' }}' {{ mysql_container_name }}"
+  register: filebeat_docker_logs_mysql_logfile_result
+
+- name: Creates the Filebeat docker containers.
+  tags: filebeat_docker_logs_mysql_create_containers
+  docker:
+    name: "{{ filebeat_docker_logs_container_name }}_{{ mysql_container_name }}"
+    image: "{{ filebeat_docker_logs_image_name }}"
+    state: restarted
+    restart_policy: always
+    docker_api_version: "{{ docker_api_version }}"
+    volumes:
+    - "/appl/{{ filebeat_docker_logs_conf_dir }}/{{ mysql_container_name }}_filebeat.yml:/filebeat.yml"
+    - "{{ filebeat_docker_logs_mysql_logfile_result.stdout }}:/work/logfile.json:ro"
+    links:
+    - "{{ logstash_docker_logs_container_name }}:logstash"

@@ -32,8 +32,8 @@
   template: src="{{ item.src }}" dest="/appl/{{ item.dest }}"
   with_items:
   - { src: nginx_conf.j2, dest: "{{ nginx_conf_dir }}/nginx.conf" }
-  #- { src: kibana_docker_logs_proxy_upstream_conf.j2, dest: "{{ nginx_conf_d_dir }}/kibana_docker_logs_proxy_upstream.conf" }
-  #- { src: kibana_docker_logs_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/kibana_docker_logs_proxy.conf" }
+  - { src: kibana_docker_logs_proxy_upstream_conf.j2, dest: "{{ nginx_conf_d_dir }}/kibana_docker_logs_proxy_upstream.conf" }
+  - { src: kibana_docker_logs_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/kibana_docker_logs_proxy.conf" }
   - { src: jenkins_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/jenkins_proxy.conf" }
   - { src: bitbucket_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/bitbucket_proxy.conf" }
   - { src: nginx_index.html.j2, dest: "{{ nginx_html_dir }}/index.html" }
@@ -72,3 +72,4 @@
     links:
     - "{{ jenkins_container_name }}:jenkins"
     - "{{ bitbucket_container_name }}:bitbucket"
+    - "{{ kibana_container_name }}:kibana"

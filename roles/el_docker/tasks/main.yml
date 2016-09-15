@@ -1,0 +1,57 @@
+---
+- name: Deletes existing Elasticsearch container.
+  tags: el_delete_container
+  docker:
+    name: "{{ el_container_name }}"
+    image: "{{ el_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Deletes existing Elasticsearch volume container.
+  tags: el_delete_volume_container
+  docker:
+    name: "{{ el_volume_container_name }}"
+    image: "{{ el_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Elasticsearch data directory.
+  tags: el_data_dir
+  file: path="{{ item }}" state=directory
+  with_items:
+  - "/appl/{{ el_data_dir }}"
+
+- name: Creates the Elasticsearch configuration directory.
+  tags: el_conf_dir
+  file: path="{{ item }}" state=directory mode=0755
+  with_items:
+  - "/appl/{{ el_conf_dir }}"
+  - "/appl/{{ el_templates_dir }}"
+
+- name: Deployes the Elasticsearch configuration.
+  tags: el_conf
+  template: src=elasticsearch_yml.j2 dest="/appl/{{ el_conf_dir }}/elasticsearch.yml" mode=0644
+
+- name: Creates the Elasticsearch volume container.
+  tags: el_create_volume_container
+  docker:
+    name: "{{ el_volume_container_name }}"
+    image: "{{ el_image }}"
+    state: started
+    docker_api_version: "{{ docker_api_version }}"
+    command: "bash -c 'chown -R elasticsearch:elasticsearch /usr/share/elasticsearch/data && chmod -R o+rX /usr/share/elasticsearch/data'"
+    volumes:
+    - "/appl/{{ el_data_dir }}:/usr/share/elasticsearch/data"
+    - "/appl/{{ el_templates_dir }}:/templates"
+
+- name: Creates the Elasticsearch container.
+  tags: el_create_container
+  docker:
+    name: "{{ el_container_name }}"
+    image: "{{ el_image }}"
+    state: restarted
+    restart_policy: always
+    docker_api_version: "{{ docker_api_version }}"
+    volumes_from: "{{ el_volume_container_name }}"
+    ports:
+    - "9200:9200"

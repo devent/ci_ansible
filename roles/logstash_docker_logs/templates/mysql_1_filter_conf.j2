@@ -1,0 +1,21 @@
+filter {
+    if [type] == "mysql_1" {
+        json {
+            source => "message"
+        }
+        if [log] =~ /^(?>\d\d){1,2}.*$/ {
+            grok {
+                match => { "log" => "^%{TIMESTAMP_ISO8601:timestamp8601} %{NUMBER:thread_id} \[(?<log_level>(Note)|(Warning)|(Error))\] %{GREEDYDATA:log_message}" }
+            }
+        } else {
+            grok {
+                match => { "log" => "^%{GREEDYDATA:log_message}" }
+            }
+        }
+        date {
+            match => [ "timestamp8601", "ISO8601" ]
+            timezone => "UTC"
+            target => "@timestamp"
+        }
+    }
+}

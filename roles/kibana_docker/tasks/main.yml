@@ -1,0 +1,31 @@
+---
+- name: Deletes existing Kibana container.
+  tags: kibana_delete_container
+  docker:
+    name: "{{ kibana_container_name }}"
+    image: "{{ kibana_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Kibana configuration directory.
+  tags: kibana_dir
+  file: path="/appl/{{ kibana_conf_dir }}" state=directory mode=0755
+
+- name: Deployes the Kibana configuration.
+  tags: kibana_conf
+  template: src=kibana_yml.j2 dest="/appl/{{ kibana_conf_dir }}/kibana.yml" mode=0644
+
+- name: Creates the Kibana docker container.
+  tags: kibana_create_container
+  docker:
+    name: "{{ kibana_container_name }}"
+    image: "{{ kibana_image }}"
+    state: restarted
+    restart_policy: always
+    docker_api_version: "{{ docker_api_version }}"
+    volumes:
+    - "/appl/{{ kibana_conf_dir }}/kibana.yml:/opt/kibana/config/kibana.yml:ro"
+    ports:
+    - "5601:5601"
+    links:
+    - "{{ el_container_name }}:el0"

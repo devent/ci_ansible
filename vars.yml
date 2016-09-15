@@ -46,3 +46,34 @@ bitbucket_image: atlassian/bitbucket-server
 bitbucket_container_name: bitbucket_1
 bitbucket_data_container_name: bitbucket_1_data
 bitbucket_data_dir: bitbucket_1/data
+
+# Elasticsearch docker container.
+el_container_name: el_1
+el_volume_container_name: el_1_data
+el_image: elasticsearch:2.4.0
+el_data_dir: el_docker/data
+el_conf_dir: el_docker/conf
+el_templates_dir: el_docker/templates
+
+# Filebeat Docker Logs
+filebeat_docker_logs_container_name: filebeat_docker_logs
+filebeat_docker_logs_image_name: prima/filebeat:1.2.3
+filebeat_docker_logs_conf_dir: filebeat_docker_logs
+
+# Logstash Docker Logs
+logstash_docker_logs_container_name: logstash_docker_logs
+logstash_docker_logs_image: logstash:2.4.0-1
+logstash_docker_logs_conf_dir: logstash_docker_logs/conf
+logstash_docker_logs_templates_dir: logstash_docker_logs/templates
+logstash_docker_logs_sources:
+- "{{ jenkins_container_name }}"
+- "{{ mysql_container_name }}"
+logstash_docker_logs_hosts:
+- "logstash:5000"
+el_hosts:
+- "el0:9200"
+
+# Kibana Docker
+kibana_container_name: kibana_1
+kibana_image: kibana:4.6.1
+kibana_conf_dir: kibana
