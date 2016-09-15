@@ -1,0 +1,12 @@
+---
+- hosts: nginx_hosts
+
+  vars_files:
+  - vars.yml
+
+  roles:
+  - role: check_mounts
+    tags: check_mounts
+
+  - role: nginx_docker
+    tags: nginx_docker

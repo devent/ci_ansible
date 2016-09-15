@@ -1,0 +1,74 @@
+---
+- name: Deletes existing Nginx container.
+  tags: nginx_delete_container
+  docker:
+    name: "{{ nginx_container_name }}"
+    image: "{{ nginx_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Nginx directories.
+  tags: nginx_dirs
+  file: path="/appl/{{ item }}" state=directory mode=0755
+  ignore_errors: yes
+  with_items:
+  - "{{ nginx_conf_dir }}"
+  - "{{ nginx_conf_d_dir }}"
+  - "{{ nginx_subpaths_dir }}"
+  - "{{ nginx_html_dir }}"
+  - "{{ nginx_sites_dir }}"
+
+- name: Deletes old Nginx configuration.
+  tags: nginx_rm_conf
+  shell: "rm {{ app_dir }}/{{ item }}"
+  ignore_errors: yes
+  with_items:
+  - "{{ nginx_conf_d_dir }}/*"
+  - "{{ nginx_subpaths_dir }}/*"
+  - "{{ nginx_sites_dir }}/*"
+
+- name: Deployes the Nginx configuration.
+  tags: nginx_conf
+  template: src="{{ item.src }}" dest="/appl/{{ item.dest }}"
+  with_items:
+  - { src: nginx_conf.j2, dest: "{{ nginx_conf_dir }}/nginx.conf" }
+  #- { src: kibana_docker_logs_proxy_upstream_conf.j2, dest: "{{ nginx_conf_d_dir }}/kibana_docker_logs_proxy_upstream.conf" }
+  #- { src: kibana_docker_logs_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/kibana_docker_logs_proxy.conf" }
+  - { src: jenkins_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/jenkins_proxy.conf" }
+  - { src: bitbucket_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/bitbucket_proxy.conf" }
+  - { src: nginx_index.html.j2, dest: "{{ nginx_html_dir }}/index.html" }
+  - { src: default_conf.j2, dest: "{{ nginx_sites_dir }}/default.conf" }
+
+- name: Deployes Nginx html root files.
+  tags: nginx_html_root_files
+  copy: src="{{ item.src }}" dest="/appl/{{ item.dest }}"
+  with_items:
+  - { src: nginx_index_html_d4ef2f6b766b6774.png, dest: "{{ nginx_html_dir }}/nginx_index_html_d4ef2f6b766b6774.png" }
+
+- name: Deployes Nginx basic auth files.
+  tags: nginx_basic_auth_files
+  copy: src="{{ item.src }}" dest="/appl/{{ item.dest }}"
+  with_items:
+  - { src: nginx.htpasswd, dest: "{{ nginx_conf_dir }}/nginx.htpasswd" }
+
+- name: Creates the Nginx docker container.
+  tags: nginx_create_container
+  docker:
+    name: "{{ nginx_container_name }}"
+    image: "{{ nginx_image }}"
+    state: restarted
+    restart_policy: always
+    docker_api_version: "{{ docker_api_version }}"
+    volumes:
+    - "/appl/{{ nginx_conf_dir }}/nginx.conf:/etc/nginx/nginx.conf:ro"
+    - "/appl/{{ nginx_conf_dir }}/nginx.htpasswd:/etc/nginx/.htpasswd:ro"
+    - "/appl/{{ nginx_conf_d_dir }}:/etc/nginx/conf.d:ro"
+    - "/appl/{{ nginx_subpaths_dir }}:/etc/nginx/subpaths-enabled:ro"
+    - "/appl/{{ nginx_html_dir }}:/etc/nginx/html:ro"
+    - "/appl/{{ nginx_sites_dir }}:/etc/nginx/sites-enabled:ro"
+    ports:
+    - "{{ nginx_http_port }}:80"
+    - "{{ nginx_https_port }}:443"
+    links:
+    - "{{ jenkins_container_name }}:jenkins"
+    - "{{ bitbucket_container_name }}:bitbucket"

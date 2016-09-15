@@ -1,0 +1,12 @@
+---
+- hosts: bitbucket_hosts
+
+  vars_files:
+  - vars.yml
+
+  roles:
+  - role: check_mounts
+    tags: check_mounts
+
+  - role: bitbucket_docker
+    tags: bitbucket_docker

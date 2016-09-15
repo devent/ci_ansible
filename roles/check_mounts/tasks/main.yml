@@ -1,0 +1,7 @@
+---
+- name: Checks that the application directory is writable.
+  stat: path="{{ app_dir }}"
+  register: appdir
+
+- fail: msg="Directory {{ app_dir }} is not writable."
+  when: not appdir.stat.exists or not appdir.stat.wusr

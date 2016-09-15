@@ -1,0 +1,70 @@
+---
+- name: Deletes existing Bitbucket container.
+  tags: bitbucket_delete_container
+  docker:
+    name: "{{ bitbucket_container_name }}"
+    image: "{{ bitbucket_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Deletes existing Bitbucket data container.
+  tags: bitbucket_delete_data_container
+  docker:
+    name: "{{ bitbucket_data_container_name }}"
+    image: "{{ bitbucket_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Bitbucket directories.
+  tags: bitbucket_dirs
+  file: path="{{ app_dir }}/{{ item }}" state=directory mode=0755
+  ignore_errors: yes
+  with_items:
+  - "{{ bitbucket_data_dir }}"
+
+- name: Allows modifications to Bitbucket configuration files.
+  tags: bitbucket_writable_conf_files
+  docker:
+    name: "{{ bitbucket_data_container_name }}"
+    image: "{{ bitbucket_image }}"
+    state: started
+    docker_api_version: "{{ docker_api_version }}"
+    command: "bash -c 'chmod o+rwX /var/atlassian/application-data/bitbucket /var/atlassian/application-data/bitbucket/shared /var/atlassian/application-data/bitbucket/shared/server.xml'"
+    docker_user: "root"
+    volumes:
+    - "/appl/{{ bitbucket_data_dir }}:/var/atlassian/application-data/bitbucket"
+
+- name: Deployes Bitbucket configuration files.
+  tags: bitbucket_conf_files
+  copy: src="{{ item.src }}" dest="/appl/{{ item.dest }}"
+  with_items:
+  - { src: server.xml, dest: "{{ bitbucket_data_dir }}/shared/server.xml" }
+
+- name: Deletes existing Bitbucket container.
+  tags: bitbucket_delete_container
+  docker:
+    name: "{{ bitbucket_container_name }}"
+    image: "{{ bitbucket_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Bitbucket data container.
+  tags: bitbucket_create_data_container
+  docker:
+    name: "{{ bitbucket_data_container_name }}"
+    image: "{{ bitbucket_image }}"
+    state: started
+    docker_api_version: "{{ docker_api_version }}"
+    command: "bash -c 'chown -R daemon /var/atlassian/application-data/bitbucket; chmod o-rwX /var/atlassian/application-data/bitbucket /var/atlassian/application-data/bitbucket/shared /var/atlassian/application-data/bitbucket/shared/server.xml'"
+    docker_user: "root"
+    volumes:
+    - "/appl/{{ bitbucket_data_dir }}:/var/atlassian/application-data/bitbucket"
+
+- name: Creates the Bitbucket docker container.
+  docker:
+    name: "{{ bitbucket_container_name }}"
+    image: "{{ bitbucket_image }}"
+    state: restarted
+    restart_policy: always
+    docker_api_version: "{{ docker_api_version }}"
+    volumes_from: "{{ bitbucket_data_container_name }}"

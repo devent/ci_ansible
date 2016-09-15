@@ -44,5 +44,5 @@
     links:
     - "{{ mysql_container_name }}:db"
     - "{{ sonar_server_container_name }}:sonar"
-    ports:
-    - "8080:8080"
+    env:
+      JENKINS_OPTS: "--prefix=/jenkins"

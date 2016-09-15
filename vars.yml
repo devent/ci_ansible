@@ -25,7 +25,24 @@ sonar_server_db_user: sonar
 sonar_server_db_password: 123qwe
 
 # Jenkins docker container.
-jenkins_image: jenkins:2.7.2
+jenkins_image: jenkins:2.7.4
 jenkins_container_name: jenkins_1
 jenkins_data_container_name: jenkins_1_data
 jenkins_data_dir: jenkins_1/data
+
+# Nginx Proxy
+nginx_container_name: nginx_proxy
+nginx_image: nginx:1.11.3
+nginx_conf_dir: nginx/conf
+nginx_conf_d_dir: nginx/conf.d
+nginx_subpaths_dir: nginx/subpaths
+nginx_sites_dir: nginx/sites
+nginx_html_dir: nginx/html
+nginx_http_port: 80
+nginx_https_port: 443
+
+# Bitbucket docker container.
+bitbucket_image: atlassian/bitbucket-server
+bitbucket_container_name: bitbucket_1
+bitbucket_data_container_name: bitbucket_1_data
+bitbucket_data_dir: bitbucket_1/data

@@ -6,3 +6,9 @@
 
 [jenkins_hosts]
 13.71.152.64 ansible_ssh_port=22 ansible_ssh_user=nttdatacnvm docker_api_version=1.21
+
+[nginx_hosts]
+13.71.152.64 ansible_ssh_port=22 ansible_ssh_user=nttdatacnvm docker_api_version=1.21
+
+[bitbucket_hosts]
+13.71.152.64 ansible_ssh_port=22 ansible_ssh_user=nttdatacnvm docker_api_version=1.21
