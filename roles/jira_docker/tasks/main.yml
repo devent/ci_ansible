@@ -1,0 +1,93 @@
+---
+- name: Deletes existing Jira container.
+  tags: jira_delete_container
+  docker:
+    name: "{{ jira_container_name }}"
+    image: "{{ jira_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Deletes existing Jira data container.
+  tags: jira_delete_data_container
+  docker:
+    name: "{{ jira_data_container_name }}"
+    image: "{{ jira_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Jira directories.
+  tags: jira_dirs
+  file: path="{{ app_dir }}/{{ item }}" state=directory mode=0755
+  ignore_errors: yes
+  with_items:
+  - "{{ jira_data_dir }}"
+  - "{{ jira_conf_dir }}"
+  - "{{ jira_plugins_dir }}"
+
+- name: Deployes Jira configuration files.
+  tags: jira_conf_files
+  copy: src="{{ item.src }}" dest="/appl/{{ item.dest }}"
+  with_items:
+  - { src: server.xml, dest: "{{ jira_conf_dir }}/server.xml" }
+  - { src: jira-healthcheck-plugin-2.1.15.jar, dest: "{{ jira_plugins_dir }}/" }
+  - { src: support-healthcheck-plugin-2.0.13.jar, dest: "{{ jira_plugins_dir }}/" }
+  - { src: stp-3.9.10.jar, dest: "{{ jira_plugins_dir }}/" }
+
+- name: Deployes the Jira database configuration.
+  tags: jira_db_conf
+  template: src="{{ item.src }}" dest="/appl/{{ item.dest }}"
+  with_items:
+  - { src: dbconfig_xml.j2, dest: "{{ jira_conf_dir }}/dbconfig.xml" }
+
+- name: Creates the Jira data container.
+  tags: jira_create_data_container
+  docker:
+    name: "{{ jira_data_container_name }}"
+    image: "{{ jira_image }}"
+    state: started
+    docker_api_version: "{{ docker_api_version }}"
+    command: "bash -c 'chown -R daemon /var/atlassian/jira'"
+    docker_user: "root"
+    volumes:
+    - "/appl/{{ jira_data_dir }}:/var/atlassian/jira"
+
+- name: Creates the Jira docker container.
+  tags: jira_create_container
+  docker:
+    name: "{{ jira_container_name }}"
+    image: "{{ jira_image }}"
+    state: restarted
+    restart_policy: always
+    docker_api_version: "{{ docker_api_version }}"
+    volumes_from: "{{ jira_data_container_name }}"
+    volumes:
+    - "/appl/{{ jira_conf_dir }}/server.xml:/opt/atlassian/jira/conf/server.xml"
+    - "/appl/{{ jira_conf_dir }}/dbconfig.xml:/var/atlassian/jira/dbconfig.xml"
+    links:
+    - "{{ jira_db_container_name }}:dbserver"
+    ports:
+    - "8080:8080"
+    - "8443:8443"
+
+- name: Manually remove plugins
+  tags: jira_manual_remove_plugins
+  command: "docker exec -u root {{ jira_container_name }} bash -c 'rm /opt/atlassian/jira/atlassian-jira/WEB-INF/atlassian-bundled-plugins/{{ item }}'"
+  ignore_errors: yes
+  with_items:
+  - "jira-healthcheck-plugin-2.1.14.jar"
+
+- name: Manually update plugins
+  tags: jira_manual_update_plugins
+  command: "docker cp /appl/{{ jira_plugins_dir }}/{{ item }} {{ jira_container_name }}:/opt/atlassian/jira/atlassian-jira/WEB-INF/atlassian-bundled-plugins/{{ item }}"
+  with_items:
+  - "jira-healthcheck-plugin-2.1.15.jar"
+  - "support-healthcheck-plugin-2.0.13.jar"
+  - "stp-3.9.10.jar"
+
+- name: Manually stop Jira
+  tags: jira_manual_stop
+  command: "docker stop {{ jira_container_name }}"
+
+- name: Manually start Jira
+  tags: jira_manual_start
+  command: "docker start {{ jira_container_name }}"

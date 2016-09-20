@@ -1,0 +1,31 @@
+{
+    "order": 0,
+    "template": "jira_1-*",
+    "settings": { },
+    "mappings": {
+        "jira_1": {
+            "properties": {
+                "log": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "stream": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "log_level": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "log_message": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "thread": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                }
+            }
+        }
+    }
+}

@@ -36,6 +36,7 @@
   - { src: kibana_docker_logs_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/kibana_docker_logs_proxy.conf" }
   - { src: jenkins_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/jenkins_proxy.conf" }
   - { src: bitbucket_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/bitbucket_proxy.conf" }
+  - { src: jira_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/jira_proxy.conf" }
   - { src: nginx_index.html.j2, dest: "{{ nginx_html_dir }}/index.html" }
   - { src: default_conf.j2, dest: "{{ nginx_sites_dir }}/default.conf" }
 
@@ -73,3 +74,4 @@
     - "{{ jenkins_container_name }}:jenkins"
     - "{{ bitbucket_container_name }}:bitbucket"
     - "{{ kibana_container_name }}:kibana"
+    - "{{ jira_container_name }}:jira"

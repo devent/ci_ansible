@@ -1,0 +1,12 @@
+---
+- hosts: jira_hosts
+
+  vars_files:
+  - vars.yml
+
+  roles:
+  - role: check_mounts
+    tags: check_mounts
+
+  - role: jira_db_docker
+    tags: jira_db_docker

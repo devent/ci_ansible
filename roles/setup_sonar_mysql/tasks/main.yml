@@ -7,4 +7,4 @@
 
 - name: Setups the MySQL database.
   tags: setup_mysql_sonar_database
-  script: "create_databases.sh '{{ mysql_container_name }}' '{{ mysql_root_password }}' '{{ sonar_server_db_user }}' '{{ sonar_server_db_password }}'"
+  script: "create_databases.sh '{{ mysql_container_name }}' '{{ mysql_root_password }}' '{{ sonar_server_db_user }}' '{{ sonar_server_db_password }}' utf8_general_ci"

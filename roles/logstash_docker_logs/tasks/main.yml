@@ -14,12 +14,17 @@
   ignore_errors: yes
   with_items:
   - "{{ logstash_docker_logs_conf_dir }}"
+  - "{{ logstash_docker_logs_patterns_dir }}"
   - "{{ logstash_docker_logs_templates_dir }}"
 
 - name: Deletes old Logstash configuration.
   tags: logstash_docker_logs_rm_conf
-  shell: "rm {{ app_dir }}/{{ logstash_docker_logs_conf_dir }}/*"
+  shell: "rm {{ app_dir }}/{{ item }}/*"
   ignore_errors: yes
+  with_items:
+  - "{{ logstash_docker_logs_conf_dir }}"
+  - "{{ logstash_docker_logs_patterns_dir }}"
+  - "{{ logstash_docker_logs_templates_dir }}"
 
 - name: Deployes the Logstash inputs configuration.
   tags: logstash_docker_logs_inputs_conf
@@ -43,6 +48,12 @@
   template: src="{{ item.src }}" dest="/appl/{{ logstash_docker_logs_conf_dir }}/20_{{ item.dest }}"
   with_items:
   - { src: outputs_conf.j2, dest: 00_outputs.conf }
+
+- name: Deployes the Logstash grok patterns.
+  tags: logstash_docker_logs_grok
+  copy: src="{{ item.src }}" dest="/appl/{{ logstash_docker_logs_patterns_dir }}/{{ item.dest }}"
+  with_items:
+  - { src: jira_grok.txt, dest: jira }
 
 - name: Deployes the Elasticsearch sources templates to Elasticsearch.
   tags: logstash_docker_logs_elasticsearch_templates_elasticsearch

@@ -47,6 +47,24 @@ bitbucket_container_name: bitbucket_1
 bitbucket_data_container_name: bitbucket_1_data
 bitbucket_data_dir: bitbucket_1/data
 
+# Jira database docker container.
+jira_db_image: mysql:5.6.33
+jira_db_data_container_name: jira_db_1_data
+jira_db_container_name: jira_db_1
+jira_db_data_dir: jira_db_1/data
+jira_db_conf_dir: jira_db_1/conf
+jira_db_root_password: Daiphoosh6ooxeew
+
+# Jira docker container.
+jira_image: cptactionhank/atlassian-jira:7.2.1
+jira_container_name: jira_1
+jira_data_container_name: jira_1_data
+jira_data_dir: jira_1/data
+jira_conf_dir: jira_1/conf
+jira_plugins_dir: jira_1/plugins
+jira_db_user: jira_1
+jira_db_password: aar1Lungaizeinei
+
 # Elasticsearch docker container.
 el_container_name: el_1
 el_volume_container_name: el_1_data
@@ -64,10 +82,12 @@ filebeat_docker_logs_conf_dir: filebeat_docker_logs
 logstash_docker_logs_container_name: logstash_docker_logs
 logstash_docker_logs_image: logstash:2.4.0-1
 logstash_docker_logs_conf_dir: logstash_docker_logs/conf
+logstash_docker_logs_patterns_dir: logstash_docker_logs/conf/patterns
 logstash_docker_logs_templates_dir: logstash_docker_logs/templates
 logstash_docker_logs_sources:
 - "{{ jenkins_container_name }}"
 - "{{ mysql_container_name }}"
+- "{{ jira_container_name }}"
 logstash_docker_logs_hosts:
 - "logstash:5000"
 el_hosts:

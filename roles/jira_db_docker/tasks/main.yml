@@ -1,0 +1,55 @@
+---
+- name: Deletes existing MySQL container.
+  tags: jira_db_delete_container
+  docker:
+    name: "{{ jira_db_container_name }}"
+    image: "{{ jira_db_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Deletes existing MySQL data container.
+  tags: jira_db_delete_data_container
+  docker:
+    name: "{{ jira_db_data_container_name }}"
+    image: "{{ jira_db_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the MySQL directories.
+  tags: jira_db_dirs
+  file: path="{{ app_dir }}/{{ item }}" state=directory mode=0755
+  ignore_errors: yes
+  with_items:
+  - "{{ jira_db_data_dir }}"
+  - "{{ jira_db_conf_dir }}"
+
+- name: Deploys the MySQL configuration.
+  tags: jira_db_conf_files
+  copy: src="{{ item.file }}" dest="/appl/{{ item.dest }}" mode=0644
+  with_items:
+  - { file: my.cnf, dest: "{{ jira_db_conf_dir }}/my.cnf" }
+
+- name: Creates the MySQL data container.
+  tags: jira_db_create_data_container
+  docker:
+    name: "{{ jira_db_data_container_name }}"
+    image: "{{ jira_db_image }}"
+    state: started
+    docker_api_version: "{{ docker_api_version }}"
+    command: "bash -c 'chown -R mysql:mysql /var/lib/mysql && chmod -R o-rX /var/lib/mysql && chmod -w /etc/mysql/my.cnf'"
+    volumes:
+    - "/appl/{{ jira_db_data_dir }}:/var/lib/mysql"
+    - "/appl/{{ jira_db_conf_dir }}/my.cnf:/etc/mysql/my.cnf"
+
+- name: Creates the MySQL docker container.
+  tags: jira_db_create_container
+  docker:
+    name: "{{ jira_db_container_name }}"
+    image: "{{ jira_db_image }}"
+    state: restarted
+    restart_policy: always
+    privileged: true
+    docker_api_version: "{{ docker_api_version }}"
+    volumes_from: "{{ jira_db_data_container_name }}"
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ jira_db_root_password }}"

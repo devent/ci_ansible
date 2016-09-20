@@ -1,0 +1,4 @@
+JIRA_LOG %{JIRA_LOG_1}|%{JIRA_LOG_2}
+JIRA_LOG_1 %{TIMESTAMP_ISO8601:log_time} %{DATA:thread} %{LOGLEVEL:log_level} %{GREEDYDATA:log_message}
+JIRA_LOG_2 %{TIME_LONG:log_time} %{LOGLEVEL:log_level} \[%{DATA:thread}\] %{GREEDYDATA:log_message}
+TIME_LONG %{NUMBER}-%{MONTH}-%{YEAR} %{TIME}
