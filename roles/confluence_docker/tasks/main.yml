@@ -1,0 +1,56 @@
+---
+- name: Deletes existing Confluence container.
+  tags: confluence_delete_container
+  docker:
+    name: "{{ confluence_container_name }}"
+    image: "{{ confluence_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Deletes existing Confluence data container.
+  tags: confluence_delete_data_container
+  docker:
+    name: "{{ confluence_data_container_name }}"
+    image: "{{ confluence_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Confluence directories.
+  tags: confluence_dirs
+  file: path="{{ app_dir }}/{{ item }}" state=directory mode=0755
+  ignore_errors: yes
+  with_items:
+  - "{{ confluence_data_dir }}"
+  - "{{ confluence_conf_dir }}"
+
+- name: Deployes Confluence configuration files.
+  tags: confluence_conf_files
+  copy: src="{{ item.src }}" dest="/appl/{{ item.dest }}"
+  with_items:
+  - { src: server.xml, dest: "{{ confluence_conf_dir }}/server.xml" }
+
+- name: Creates the Confluence data container.
+  tags: confluence_create_data_container
+  docker:
+    name: "{{ confluence_data_container_name }}"
+    image: "{{ confluence_image }}"
+    state: started
+    docker_api_version: "{{ docker_api_version }}"
+    command: "bash -c 'chown -R daemon /var/atlassian/confluence'"
+    docker_user: "root"
+    volumes:
+    - "/appl/{{ confluence_data_dir }}:/var/atlassian/confluence"
+
+- name: Creates the Confluence docker container.
+  tags: confluence_create_container
+  docker:
+    name: "{{ confluence_container_name }}"
+    image: "{{ confluence_image }}"
+    state: restarted
+    restart_policy: always
+    docker_api_version: "{{ docker_api_version }}"
+    volumes_from: "{{ confluence_data_container_name }}"
+    volumes:
+    - "/appl/{{ confluence_conf_dir }}/server.xml:/usr/local/atlassian/confluence/conf/server.xml"
+    links:
+    - "{{ postgresql_container_name }}:dbserver"

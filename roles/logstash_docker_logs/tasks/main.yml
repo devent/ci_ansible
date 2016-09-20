@@ -54,6 +54,7 @@
   copy: src="{{ item.src }}" dest="/appl/{{ logstash_docker_logs_patterns_dir }}/{{ item.dest }}"
   with_items:
   - { src: jira_grok.txt, dest: jira }
+  - { src: nginx_grok.txt, dest: nginx }
 
 - name: Deployes the Elasticsearch sources templates to Elasticsearch.
   tags: logstash_docker_logs_elasticsearch_templates_elasticsearch

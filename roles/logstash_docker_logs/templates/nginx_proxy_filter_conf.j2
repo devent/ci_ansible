@@ -1,0 +1,15 @@
+filter {
+    if [type] == "nginx_proxy" {
+        json {
+            source => "message"
+        }
+        grok {
+            patterns_dir => ["/etc/logstash/patterns"]
+            match => { "log" => "^%{NGINX}$" }
+        }
+        date {
+            match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+            target => "@timestamp"
+        }
+    }
+}

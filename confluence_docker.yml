@@ -1,5 +1,5 @@
 ---
-- hosts: jira_hosts
+- hosts: confluence_hosts
 
   vars_files:
   - vars.yml
@@ -8,5 +8,5 @@
   - role: check_mounts
     tags: check_mounts
 
-  - role: setup_jira_mysql
-    tags: setup_jira_mysql
+  - role: confluence_docker
+    tags: confluence_docker

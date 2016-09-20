@@ -1,0 +1,12 @@
+---
+- hosts: postgresql_hosts
+
+  vars_files:
+  - vars.yml
+
+  roles:
+  - role: check_mounts
+    tags: check_mounts
+
+  - role: setup_confluence_db
+    tags: setup_confluence_db

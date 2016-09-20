@@ -1,0 +1,1 @@
+NGINX %{IPORHOST:clientip} - %{USER:ident} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{URIPATHPARAM:request}(?: HTTP/%{NUMBER:httpversion})?|-)" %{NUMBER:response} (?:%{NUMBER:bytes}|-) "(?:%{URI:referrer}|-)" "%{DATA:agent}" "(?:%{DATA:xforwarded}|-)"

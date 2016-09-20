@@ -1,0 +1,11 @@
+#!/bin/bash
+NAME="$1"; shift
+DB_USER="$1"; shift
+DB_PASSWORD="$1"; shift
+
+docker exec $NAME bash -c "psql -v ON_ERROR_STOP=1 --username postgres <<-EOF
+CREATE USER $DB_USER;
+CREATE DATABASE $DB_USER;
+ALTER USER $DB_USER PASSWORD '$DB_PASSWORD';
+GRANT ALL PRIVILEGES ON DATABASE $DB_USER TO $DB_USER;
+EOF"

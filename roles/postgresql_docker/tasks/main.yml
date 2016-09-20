@@ -1,0 +1,54 @@
+---
+- name: Deletes existing PostgreSQL container.
+  tags: postgresql_delete_container
+  docker:
+    name: "{{ postgresql_container_name }}"
+    image: "{{ postgresql_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Deletes existing PostgreSQL data container.
+  tags: postgresql_delete_data_container
+  docker:
+    name: "{{ postgresql_data_container_name }}"
+    image: "{{ postgresql_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the PostgreSQL directories.
+  tags: postgresql_dirs
+  file: path="{{ app_dir }}/{{ item }}" state=directory mode=0755
+  ignore_errors: yes
+  with_items:
+  - "{{ postgresql_data_dir }}"
+  - "{{ postgresql_conf_dir }}"
+
+- name: Deploys the PostgreSQL configuration.
+  tags: postgresql_conf_files
+  copy: src="{{ item.file }}" dest="/appl/{{ item.dest }}" mode=0644
+  with_items:
+  - { file: my.cnf, dest: "{{ postgresql_conf_dir }}/my.cnf" }
+
+- name: Creates the PostgreSQL data container.
+  tags: postgresql_create_data_container
+  docker:
+    name: "{{ postgresql_data_container_name }}"
+    image: "{{ postgresql_image }}"
+    state: started
+    docker_api_version: "{{ docker_api_version }}"
+    command: "bash -c 'chown -R postgres /var/lib/postgresql/data'"
+    volumes:
+    - "/appl/{{ postgresql_data_dir }}:/var/lib/postgresql/data"
+
+- name: Creates the PostgreSQL docker container.
+  tags: postgresql_create_container
+  docker:
+    name: "{{ postgresql_container_name }}"
+    image: "{{ postgresql_image }}"
+    state: restarted
+    restart_policy: always
+    privileged: true
+    docker_api_version: "{{ docker_api_version }}"
+    volumes_from: "{{ postgresql_data_container_name }}"
+    env:
+      POSTGRES_PASSWORD: "{{ postgresql_root_password }}"

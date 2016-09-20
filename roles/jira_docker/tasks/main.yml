@@ -64,10 +64,7 @@
     - "/appl/{{ jira_conf_dir }}/server.xml:/opt/atlassian/jira/conf/server.xml"
     - "/appl/{{ jira_conf_dir }}/dbconfig.xml:/var/atlassian/jira/dbconfig.xml"
     links:
-    - "{{ jira_db_container_name }}:dbserver"
-    ports:
-    - "8080:8080"
-    - "8443:8443"
+    - "{{ postgresql_container_name }}:dbserver"
 
 - name: Manually remove plugins
   tags: jira_manual_remove_plugins

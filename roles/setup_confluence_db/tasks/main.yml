@@ -1,0 +1,4 @@
+---
+- name: Setups the Confluence database.
+  tags: setup_db_confluence_database
+  script: "create_postgre_db.sh '{{ postgresql_container_name }}' '{{ confluence_db_user }}' '{{ confluence_db_password }}'"

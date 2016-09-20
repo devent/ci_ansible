@@ -1,5 +1,5 @@
 ---
-- hosts: jira_hosts
+- hosts: postgresql_hosts
 
   vars_files:
   - vars.yml
@@ -8,5 +8,5 @@
   - role: check_mounts
     tags: check_mounts
 
-  - role: jira_db_docker
-    tags: jira_db_docker
+  - role: setup_jira_db
+    tags: setup_jira_db

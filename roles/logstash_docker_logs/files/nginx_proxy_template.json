@@ -1,0 +1,59 @@
+{
+    "order": 0,
+    "template": "nginx_proxy-*",
+    "settings": { },
+    "mappings": {
+        "nginx_proxy": {
+            "properties": {
+                "log": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "stream": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "time": {
+                    "type": "date"
+                },
+                "clientip": {
+                    "type": "ip"
+                },
+                "ident": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "verb": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "request": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "httpversion": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "response": {
+                    "type": "integer"
+                },
+                "bytes": {
+                    "type": "long"
+                },
+                "referrer": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "agent": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "xforwarded": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                }
+            }
+        }
+    }
+}
