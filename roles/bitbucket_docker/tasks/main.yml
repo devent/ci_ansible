@@ -1,6 +1,6 @@
 ---
 - name: Deletes existing Bitbucket container.
-  tags: bitbucket_delete_container
+  tags: bitbucket_delete_container_1
   docker:
     name: "{{ bitbucket_container_name }}"
     image: "{{ bitbucket_image }}"
@@ -41,7 +41,7 @@
   - { src: server.xml, dest: "{{ bitbucket_data_dir }}/shared/server.xml" }
 
 - name: Deletes existing Bitbucket container.
-  tags: bitbucket_delete_container
+  tags: bitbucket_delete_container_2
   docker:
     name: "{{ bitbucket_container_name }}"
     image: "{{ bitbucket_image }}"
@@ -61,6 +61,7 @@
     - "/appl/{{ bitbucket_data_dir }}:/var/atlassian/application-data/bitbucket"
 
 - name: Creates the Bitbucket docker container.
+  tags: bitbucket_create_container
   docker:
     name: "{{ bitbucket_container_name }}"
     image: "{{ bitbucket_image }}"
@@ -68,3 +69,7 @@
     restart_policy: always
     docker_api_version: "{{ docker_api_version }}"
     volumes_from: "{{ bitbucket_data_container_name }}"
+    expose:
+    - "1024"
+    ports:
+    - "1024:1024"
