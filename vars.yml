@@ -94,6 +94,7 @@ logstash_docker_logs_image: logstash:2.4.0-1
 logstash_docker_logs_conf_dir: logstash_docker_logs/conf
 logstash_docker_logs_patterns_dir: logstash_docker_logs/conf/patterns
 logstash_docker_logs_templates_dir: logstash_docker_logs/templates
+logstash_docker_logs_geo_dir: logstash_docker_logs/geo
 logstash_docker_logs_sources:
 - "{{ jenkins_container_name }}"
 - "{{ mysql_container_name }}"

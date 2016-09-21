@@ -11,5 +11,15 @@ filter {
             match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
             target => "@timestamp"
         }
+        geoip {
+            source => "clientip"
+            target => "geoip"
+            database => "/etc/geo/GeoLiteCity.dat"
+            add_field => [ "[geoip][coordinates]", "%{[geoip][longitude]}" ]
+            add_field => [ "[geoip][coordinates]", "%{[geoip][latitude]}"  ]
+        }
+        mutate {
+            convert => [ "[geoip][coordinates]", "float"]
+        }
     }
 }

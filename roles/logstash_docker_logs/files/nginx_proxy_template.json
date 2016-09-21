@@ -52,6 +52,13 @@
                 "xforwarded": {
                     "type": "string",
                     "index": "not_analyzed"
+                },
+                "geoip": {
+                    "type" : "object",
+                    "dynamic": true,
+                    "properties" : {
+                        "location" : { "type" : "geo_point" }
+                    }
                 }
             }
         }

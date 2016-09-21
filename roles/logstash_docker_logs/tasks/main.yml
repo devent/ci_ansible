@@ -16,6 +16,7 @@
   - "{{ logstash_docker_logs_conf_dir }}"
   - "{{ logstash_docker_logs_patterns_dir }}"
   - "{{ logstash_docker_logs_templates_dir }}"
+  - "{{ logstash_docker_logs_geo_dir }}"
 
 - name: Deletes old Logstash configuration.
   tags: logstash_docker_logs_rm_conf
@@ -66,6 +67,18 @@
   copy: src="{{ item }}_template.json" dest="/appl/{{ logstash_docker_logs_templates_dir }}/{{ item }}_template.json"
   with_items: "{{ logstash_docker_logs_sources }}"
 
+- name: Downloads the GeoIP database to Logstash.
+  tags: logstash_docker_logs_geoip_download
+  get_url:
+    url: http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
+    dest: /tmp
+
+- name: Extracts the GeoIP database to Logstash.
+  tags: logstash_docker_logs_geoip_unarchive
+  shell: "if [ -f /tmp/GeoLiteCity.dat.gz ]; then gunzip -f /tmp/GeoLiteCity.dat.gz; fi && mv /tmp/GeoLiteCity.dat ."
+  args:
+    chdir: "/appl/{{ logstash_docker_logs_geo_dir }}"
+
 - name: Creates the Logstash docker container.
   tags: logstash_docker_logs_create_container
   docker:
@@ -78,6 +91,7 @@
     volumes:
     - "/appl/{{ logstash_docker_logs_conf_dir }}:/etc/logstash:ro"
     - "/appl/{{ logstash_docker_logs_templates_dir }}:/etc/elasticsearch:ro"
+    - "/appl/{{ logstash_docker_logs_geo_dir }}:/etc/geo:ro"
     expose:
     - "5000"
     links:
