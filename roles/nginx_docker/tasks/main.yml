@@ -7,6 +7,14 @@
     docker_api_version: "{{ docker_api_version }}"
     state: absent
 
+- name: Deletes existing Nginx data container.
+  tags: nginx_delete_data_container
+  docker:
+    name: "{{ nginx_data_container_name }}"
+    image: "{{ nginx_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
 - name: Creates the Nginx directories.
   tags: nginx_dirs
   file: path="/appl/{{ item }}" state=directory mode=0755
@@ -17,6 +25,7 @@
   - "{{ nginx_subpaths_dir }}"
   - "{{ nginx_html_dir }}"
   - "{{ nginx_sites_dir }}"
+  - "{{ nginx_cache_dir }}"
 
 - name: Deletes old Nginx configuration.
   tags: nginx_rm_conf
@@ -35,9 +44,13 @@
   - { src: kibana_docker_logs_proxy_upstream_conf.j2, dest: "{{ nginx_conf_d_dir }}/kibana_docker_logs_proxy_upstream.conf" }
   - { src: kibana_docker_logs_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/kibana_docker_logs_proxy.conf" }
   - { src: jenkins_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/jenkins_proxy.conf" }
+  - { src: jenkins_cache_conf.j2, dest: "{{ nginx_conf_d_dir }}/jenkins_cache.conf" }
   - { src: bitbucket_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/bitbucket_proxy.conf" }
+  - { src: bitbucket_cache_conf.j2, dest: "{{ nginx_conf_d_dir }}/bitbucket_cache.conf" }
   - { src: jira_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/jira_proxy.conf" }
+  - { src: jira_cache_conf.j2, dest: "{{ nginx_conf_d_dir }}/jira_cache.conf" }
   - { src: confluence_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/confluence_proxy.conf" }
+  - { src: confluence_cache_conf.j2, dest: "{{ nginx_conf_d_dir }}/confluence_cache.conf" }
   - { src: sonar_proxy_conf.j2, dest: "{{ nginx_subpaths_dir }}/sonar_proxy.conf" }
   - { src: nginx_index.html.j2, dest: "{{ nginx_html_dir }}/index.html" }
   - { src: default_conf.j2, dest: "{{ nginx_sites_dir }}/default.conf" }
@@ -54,6 +67,18 @@
   with_items:
   - { src: nginx.htpasswd, dest: "{{ nginx_conf_dir }}/nginx.htpasswd" }
 
+- name: Creates the Nginx data container.
+  tags: nginx_create_data_container
+  docker:
+    name: "{{ nginx_data_container_name }}"
+    image: "{{ nginx_image }}"
+    state: started
+    docker_api_version: "{{ docker_api_version }}"
+    command: "bash -c 'mkdir -p /var/nginx/cache; chown nginx -R /var/nginx/cache;'"
+    docker_user: "root"
+    volumes:
+    - "/appl/{{ nginx_cache_dir }}:/var/nginx/cache"
+
 - name: Creates the Nginx docker container.
   tags: nginx_create_container
   docker:
@@ -62,6 +87,7 @@
     state: restarted
     restart_policy: always
     docker_api_version: "{{ docker_api_version }}"
+    volumes_from: "{{ nginx_data_container_name }}"
     volumes:
     - "/appl/{{ nginx_conf_dir }}/nginx.conf:/etc/nginx/nginx.conf:ro"
     - "/appl/{{ nginx_conf_dir }}/nginx.htpasswd:/etc/nginx/.htpasswd:ro"
