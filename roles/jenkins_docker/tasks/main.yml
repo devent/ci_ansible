@@ -42,7 +42,6 @@
     docker_api_version: "{{ docker_api_version }}"
     volumes_from: "{{ jenkins_data_container_name }}"
     links:
-    - "{{ mysql_container_name }}:db"
     - "{{ sonar_server_container_name }}:sonar"
     env:
       JENKINS_OPTS: "--prefix=/jenkins"
