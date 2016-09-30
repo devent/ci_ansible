@@ -110,3 +110,8 @@ el_hosts:
 kibana_container_name: kibana_1
 kibana_image: kibana:4.6.1
 kibana_conf_dir: kibana
+
+# Cadvisor Docker
+cadvisor_container_name: cadvisor_1
+cadvisor_image: google/cadvisor:latest
+cadvisor_conf_dir: cadvisor

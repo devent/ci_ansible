@@ -1,0 +1,25 @@
+---
+- name: Deletes existing Cadvisor container.
+  tags: cadvisor_delete_container
+  docker:
+    name: "{{ cadvisor_container_name }}"
+    image: "{{ cadvisor_image }}"
+    docker_api_version: "{{ docker_api_version }}"
+    state: absent
+
+- name: Creates the Cadvisor docker container.
+  tags: cadvisor_create_container
+  docker:
+    name: "{{ cadvisor_container_name }}"
+    image: "{{ cadvisor_image }}"
+    state: restarted
+    restart_policy: always
+    docker_api_version: "{{ docker_api_version }}"
+    privileged: true
+    volumes:
+    - "/:/rootfs:ro"
+    - "/var/run:/var/run:rw"
+    - "/sys:/sys:ro"
+    - "/var/lib/docker/:/var/lib/docker:ro"
+    ports:
+    - "8080:8080"
